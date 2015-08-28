@@ -1,18 +1,12 @@
-﻿
-printfn"ololo"
-  
-
-module HuffmanCompression = 
+﻿module HuffmanCompression = 
     open System.IO
 // дерево
 // листья дерева хранят в себе символ и сколько раз этот символ встречается(частоту)
 // все остальные вершины хранят ссылки на поодеревья и сумму частот поддеревьев
+    
     type Tree = 
         | Leaf of char * int
         | Node of int * Tree * Tree
-
-    let a = System.Console.ReadLine()
-    printfn "uhjkjl"
 
     let input = File.ReadAllText("input.txt")
 
@@ -20,16 +14,10 @@ module HuffmanCompression =
 
     System.Console.WriteLine()
 
-    let listOfChars = seq[for i in input -> (i, 6)]
+    let listOfChars = seq[for i in input -> (i, 1)]
+    //let listOfChars2 list = seq[for i in list -> if 
 
     System.Console.WriteLine(listOfChars)
-
-    let blackSquares =
-
-        [ for i in 0 .. 7 do
-              for j in 0 .. 7 do
-                  if (i+j) % 2 = 1 then yield (i, j) ]
-    printfn "black squares %A" blackSquares
 
 
     type HuffmanCompr(symbols: seq<char>, freq: seq<int>) =
@@ -103,10 +91,10 @@ module HuffmanCompression =
             let bitsList = Array.toList bits 
             new string (decodeInner bitsList tree [])
         
-       // let stringsToArrays (str:string) = 
-            //let arr = str.ToCharArray()
-          //  for ch in arr do
+        
 
         
-        //member coder.Encode source = encode source
-        //member coder.Decode source = decode source
+        member coder.Encode source = encode source
+        member coder.Decode source = decode source
+
+    
