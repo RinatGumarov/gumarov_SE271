@@ -11,7 +11,8 @@
     
 
 
-    let input = File.ReadAllText("input.txt")
+//    let input = File.ReadAllText("input.txt")
+    let input = "ololo"
 
     let listOfChars = seq[for i in input -> (i,1)] |> Seq.toList
     let listOfFreqs = seq[for i in input -> (i, 1)] |> Seq.toList
@@ -32,14 +33,18 @@
     printfn "%A" listOfFreqs
     let freqs = otsev (reverse (otsev2 listOfFreqs))
     printfn "%A" freqs
+    let freq1 (_,p) = p
+    let sortedFreqs = freqs |> List.sortBy freq1
+    printfn "%A" sortedFreqs
+
+    let toLeaf (a,b) = Leaf(a,b)
 
 
     
     // список из пар символ*частота(это и есть листья)
     let leafs =
             freqs
-            |> Seq.toList 
-            |> List.map Leaf
+            |> List.map toLeaf
    // getFreq
     let freq node = 
             match node with
@@ -51,7 +56,7 @@
             //нижний уровень - листья(символ,частота)
             //сортируем элемент по частоте, чтобы выбрать два с наименьшей
             //создаем новую вершину по принципу - вешины с наименьшей частотой - сыновья, частота = сумма частот сыновей
-
+    
 
     let rec buildTree roots =
             match roots |> List.sortBy freq with
@@ -60,7 +65,8 @@
             | minmin::min::rest -> 
                 let newNode = Node(freq minmin + freq min, minmin, min)
                 buildTree (newNode::rest)
-        
+
+    printfn "%A" (buildTree leafs)
         
     let tree = buildTree leafs
 
@@ -73,8 +79,8 @@
                match tree with
                | Leaf (c,_) -> [(c,[])]
                | Node (_, left, right) ->
-                   let leftCodes = huffmanCodes left |> List.map (fun (c, code) -> (c,1::code))
-                   let rightCodes = huffmanCodes right |> List.map (fun (c, code) -> (c,0::code))
+                   let leftCodes = huffmanCodes left |> List.map (fun (c, code) -> (c,true::code))
+                   let rightCodes = huffmanCodes right |> List.map (fun (c, code) -> (c,false::code))
                    List.append leftCodes rightCodes
            huffmanCodes tree
            |> List.map (fun (c, code) -> (c, List.toArray code))
@@ -88,6 +94,9 @@
             str.ToCharArray()
             |> Array.map encodeChar
             |> Array.concat
+
+    printfn "наканецта %A" (encode "ololol")
+//    File.WriteAllBytes("output.txt", (encode input))
         
     let decode bits =
             let rec decodeInner bitsLeft treeNode result =
