@@ -32,16 +32,16 @@
     printfn "%A" listOfFreqs
     let freqs = otsev (reverse (otsev2 listOfFreqs))
     printfn "%A" freqs
-    type HuffmanCompr(symbols: seq<char>, freq: seq<int>) =
+
 
     
     // список из пар символ*частота(это и есть листья)
-        let leafs =
-            Seq.zip symbols freq
+    let leafs =
+            freqs
             |> Seq.toList 
             |> List.map Leaf
    // getFreq
-        let freq node = 
+    let freq node = 
             match node with
             | Leaf(_,p) -> p
             | Node(p,_,_) -> p
@@ -53,7 +53,7 @@
             //создаем новую вершину по принципу - вешины с наименьшей частотой - сыновья, частота = сумма частот сыновей
 
 
-        let rec buildTree roots =
+    let rec buildTree roots =
             match roots |> List.sortBy freq with
             | [] -> failwith "Error! empty list"
             | [node] -> node
@@ -62,13 +62,13 @@
                 buildTree (newNode::rest)
         
         
-        let tree = buildTree leafs
+    let tree = buildTree leafs
 
         // шифрование символов следующим образом
        //           [корень]
        //       (1) |     | (0)
        //     [вершина]   [вершина]
-        let huffmanCodeTable =
+    let huffmanCodeTable =
            let rec huffmanCodes tree =
                match tree with
                | Leaf (c,_) -> [(c,[])]
@@ -79,10 +79,8 @@
            huffmanCodes tree
            |> List.map (fun (c, code) -> (c, List.toArray code))
            |> Map.ofList
-        let ptintOlolo = 
-            printfn "ololo"
-       
-        let encode (str : string)=
+    
+    let encode (str : string)=
             let encodeChar c =
                 match huffmanCodeTable |> Map.tryFind c with
                 | Some bits -> bits
@@ -91,7 +89,7 @@
             |> Array.map encodeChar
             |> Array.concat
         
-        let decode bits =
+    let decode bits =
             let rec decodeInner bitsLeft treeNode result =
                 match bitsLeft, treeNode with
                 | [], Node(_,_,_) -> failwith "Bits provided did not form a complete word"
@@ -101,10 +99,4 @@
                                           then decodeInner rest l result
                                           else decodeInner rest r result
             let bitsList = Array.toList bits 
-            new string (decodeInner bitsList tree [])
-        
-        
-
-        
-        member coder.Encode source = encode source
-        member coder.Decode source = decode source
+            new string (decodeInner bitsList tree [])                                         
