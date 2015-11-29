@@ -13,12 +13,12 @@
 
     let input = File.ReadAllText("input.txt")
 
-    let listOfChars = seq[for i in input -> i] |> Seq.toList
+    let listOfChars = seq[for i in input -> (i,1)] |> Seq.toList
     let listOfFreqs = seq[for i in input -> (i, 1)] |> Seq.toList
 
     let c = input.ToCharArray()|> Array.toList
     let rec otsev = function
-        | (p::xs) -> p::otsev [ for x in xs do if x <> p then yield x ]
+        | (p::xs) -> p::otsev [ for x in xs do if fst x <> fst p then yield x ]
         | [] -> []
   
     let chs = otsev listOfChars
@@ -26,11 +26,12 @@
     let reverse list = List.fold(fun acc x -> x::acc) [] list
 
     let rec otsev2 = function
-        | (p::xs) -> otsev2 [ for x in xs do if fst x = fst p then yield (fst x, snd p + 1)
+        | (p::xs) -> p::otsev2 [ for x in xs do if fst x = fst p then yield (fst x, snd p + 1)
                                                 else yield x ]
         | [] -> []
     printfn "%A" listOfFreqs
-    printfn "jjj %A" (otsev2 listOfFreqs) 
+    let freqs = otsev (reverse (otsev2 listOfFreqs))
+    printfn "%A" freqs
     type HuffmanCompr(symbols: seq<char>, freq: seq<int>) =
 
     
@@ -107,11 +108,3 @@
         
         member coder.Encode source = encode source
         member coder.Decode source = decode source
-
-    type System.String with
-       member this.StartsWithA = this.StartsWith "A"
-
-    // test
-    let s = "Alice"
-    printfn "'%s' starts with an 'A' = %A" s s.StartsWithA
-
