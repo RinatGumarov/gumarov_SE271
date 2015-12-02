@@ -8,43 +8,35 @@
         | Leaf of char * int
         | Node of int * Tree * Tree
 
-    
-
-
 //    let input = File.ReadAllText("input.txt")
-    let input = "ololo"
-
-    let listOfChars = seq[for i in input -> (i,1)] |> Seq.toList
+    let input = "olol fgbbeyt tynr tyumr umry mruymr yo"
+   
     let listOfFreqs = seq[for i in input -> (i, 1)] |> Seq.toList
 
-    let c = input.ToCharArray()|> Array.toList
+    //перевод последовательности из 8 битов в число
+    let binToDec (bin:int list) = [for i in 0 .. 7 -> bin.Item(i)*(if i = 7 then 1 else ([for j in 0 .. (6-i) -> 2] |> List.reduce(*)))] |> List.reduce(+)
+
+    //копирование count элементов списка list начиная с index
+    let copy (list: int list) index count = [for i in index .. (index + count - 1) -> list.Item(i)]
+
+    //убрать повторяющиеся элементы списка, оставив только первое вхождение (повторяются только символы, частоты могуут быть разными)
     let rec otsev = function
         | (p::xs) -> p::otsev [ for x in xs do if fst x <> fst p then yield x ]
         | [] -> []
-  
-    let chs = otsev listOfChars
 
+    //развернуть список
     let reverse list = List.fold(fun acc x -> x::acc) [] list
 
+    //при каждой следующей встрече символа, увеличим его частоту на единицу
     let rec otsev2 = function
         | (p::xs) -> p::otsev2 [ for x in xs do if fst x = fst p then yield (fst x, snd p + 1)
                                                 else yield x ]
         | [] -> []
-    printfn "%A" listOfFreqs
-    let freqs = otsev (reverse (otsev2 listOfFreqs))
-    printfn "%A" freqs
-    let freq1 (_,p) = p
-    let sortedFreqs = freqs |> List.sortBy freq1
-    printfn "%A" sortedFreqs
-
-    let toLeaf (a,b) = Leaf(a,b)
-
-
     
-    // список из пар символ*частота(это и есть листья)
-    let leafs =
-            freqs
-            |> List.map toLeaf
+    //получим список из пар (символ,частота) -> список из листьев
+    let leafs = otsev (reverse (otsev2 listOfFreqs)) |> List.map Leaf
+    
+   
    // getFreq
     let freq node = 
             match node with
@@ -64,9 +56,7 @@
             | [node] -> node
             | minmin::min::rest -> 
                 let newNode = Node(freq minmin + freq min, minmin, min)
-                buildTree (newNode::rest)
-
-    printfn "%A" (buildTree leafs)
+                buildTree (newNode::rest)               
         
     let tree = buildTree leafs
 
@@ -79,14 +69,14 @@
                match tree with
                | Leaf (c,_) -> [(c,[])]
                | Node (_, left, right) ->
-                   let leftCodes = huffmanCodes left |> List.map (fun (c, code) -> (c,true::code))
-                   let rightCodes = huffmanCodes right |> List.map (fun (c, code) -> (c,false::code))
+                   let leftCodes = huffmanCodes left |> List.map (fun (c, code) -> (c,1::code))
+                   let rightCodes = huffmanCodes right |> List.map (fun (c, code) -> (c,0::code))
                    List.append leftCodes rightCodes
            huffmanCodes tree
            |> List.map (fun (c, code) -> (c, List.toArray code))
-           |> Map.ofList
+           |> Map.ofList;
     
-    let encode (str : string)=
+    let encode (str : string) =
             let encodeChar c =
                 match huffmanCodeTable |> Map.tryFind c with
                 | Some bits -> bits
@@ -94,10 +84,17 @@
             str.ToCharArray()
             |> Array.map encodeChar
             |> Array.concat
+            |> Array.toList
 
-    printfn "наканецта %A" (encode "ololol")
-//    File.WriteAllBytes("output.txt", (encode input))
-        
+    // получим последовательность из нулей и единиц
+    let listOfBits = encode input
+
+    // получим последовательность из символов отрезав несколько бит с конца, чтобы делилось на 8
+    let listOfChars = ([for i in 0 .. (((encode input).Length)/8 - 1) -> copy listOfBits i 8]|> List.map binToDec|> List.map char )
+    let last8 = (binToDec ((copy listOfBits (8*(listOfBits.Length/8)) (listOfBits.Length-(8*(listOfBits.Length/8))-1)) @ [for i in 0 .. listOfBits.Length%8 -> 0]))
+//    File.WriteAllText("output.trn", (encode input))
+    
+      // восстановить исходный файл по списку из нулей и единиц  
     let decode bits =
             let rec decodeInner bitsLeft treeNode result =
                 match bitsLeft, treeNode with
