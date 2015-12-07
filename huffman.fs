@@ -13,8 +13,7 @@
         |0 -> 1
         |1 -> x
         |_ -> x * (degree x (d-1))
-    let s = "8478ki"
-    let g = s.
+
 
     let input = File.ReadAllText("/Users/Rinat/Movies/test.txt")
 //    let input = "1992 Nintendo"
@@ -39,7 +38,7 @@
     //копирование count элементов списка list начиная с index
     let copy (list: int list) index count = [for i in index .. (index + count - 1) -> list.Item(i)]
 
-    //убрать повторяющиеся элементы списка, оставив только первое вхождение (повторяются только символы, частоты могут быть разными)
+    //убрать повторяющиеся элементы списка, оставив только первое вхождение (повторяются только символы, частоты могуут быть разными)
     let rec otsev = function
         | (p::xs) -> p::otsev [ for x in xs do if fst x <> fst p then yield x ]
         | [] -> []
@@ -63,8 +62,6 @@
             match node with
             | Leaf(_,p) -> p
             | Node(p,_,_) -> p
-//    let chr node = match
-         
 
             //создание дерева по списку из листьев
             //нижний уровень - листья(символ,частота)
@@ -133,14 +130,14 @@
     let decode bits = 
             let rec decodeInner bitsLeft treeNode result =
                 match bitsLeft, treeNode with
-                | [], Node(_,_,_) -> failwith "Bits provided did not form a complete word"
+                | [], Node(_,_,_) -> result |>List.rev |> List.toArray //failwith "Bits provided did not form a complete word"
                 | [], Leaf(c,_) -> (c::result) |>List.rev |> List.toArray
                 | _, Leaf(c,_) -> decodeInner bitsLeft tree (c::result)
                 | b::rest, Node(_,l,r) -> if (b=1)
                                           then decodeInner rest l result
                                           else decodeInner rest r result 
             new string (decodeInner bits tree [])  
-    printfn "decode %A" (decode (bitbit@[0;0;0]))
+    printfn "decode %A" (decode bitbit)
 
     let rec archive (inputPath: string) (outputPath:string) (x: char) = 
         match x with
@@ -181,33 +178,6 @@
             for i in listOfChars do str.Write(i)
             str.Close()
         |'+' -> 
-//            let readFile (s:char list) =
-//                let mutable i = -1
-//                let parse c =
-//                    match c with
-//                    |'0' -> 0
-//                    |'1' -> 1
-//                    |'2' -> 2
-//                    |'3' -> 3
-//                    |'4' -> 4
-//                    |'5' -> 5
-//                    |'6' -> 6
-//                    |'7' -> 7
-//                    |'8' -> 8
-//                    |'9' -> 9
-//                    | _ -> failwith "couldnt parse"
-//                let rec length l =
-//                    i <- i+1
-//                    match s.Item(i) with
-//                    |'_' -> []
-//                            i <- i+1
-//                    | _  -> (parse (s.Item(i)))::(length l)
-//                let l = length s 
-//                for i in 0 .. l.Length -> l.Item(i)*(degree 10 (l.Length - i))
-//                printfn "%A" l
-//                let
-//
-
             let input = File.ReadAllText(inputPath)|> Seq.toList |> List.map int
             let decode bits = 
                 let rec decodeInner bitsLeft treeNode result =
@@ -224,5 +194,4 @@
             for i in (decode (bitbit@[0;0;0])) do str.Write(i)
             str.Close()
         | _ -> printfn"use:: inputPath outputPath x(+ -> decompress; - -> compress)" 
-    archive "/Users/Rinat/Movies/test.txt" "/Users/Rinat/Movies/test33.txt" '-'
-
+//    archive "/Users/Rinat/Movies/test3.txt" "/Users/Rinat/Movies/test33.txt" '-'
