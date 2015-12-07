@@ -8,8 +8,15 @@
         | Leaf of char * int
         | Node of int * Tree * Tree
     printfn"ololol"
+    let rec degree x d =
+        match d with
+        |0 -> 1
+        |1 -> x
+        |_ -> x * (degree x (d-1))
+    let s = "8478ki"
+    let g = s.
 
-    let input = File.ReadAllText("/Users/Rinat/Movies/test3.txt")
+    let input = File.ReadAllText("/Users/Rinat/Movies/test.txt")
 //    let input = "1992 Nintendo"
     printfn "%A" input
 
@@ -32,7 +39,7 @@
     //копирование count элементов списка list начиная с index
     let copy (list: int list) index count = [for i in index .. (index + count - 1) -> list.Item(i)]
 
-    //убрать повторяющиеся элементы списка, оставив только первое вхождение (повторяются только символы, частоты могуут быть разными)
+    //убрать повторяющиеся элементы списка, оставив только первое вхождение (повторяются только символы, частоты могут быть разными)
     let rec otsev = function
         | (p::xs) -> p::otsev [ for x in xs do if fst x <> fst p then yield x ]
         | [] -> []
@@ -46,11 +53,18 @@
     //получим список из пар (символ,частота) -> список из листьев
     let leafs = otsev (List.rev (otsev2 listOfFreqs)) |> List.map (fun (x,y)->Leaf(x,y))
 
+    let rec len x =
+        match x/10 with
+        | 0 -> 1
+        | _ -> 1 + (len (x/10))
+
    // getFreq
     let freq node = 
             match node with
             | Leaf(_,p) -> p
             | Node(p,_,_) -> p
+//    let chr node = match
+         
 
             //создание дерева по списку из листьев
             //нижний уровень - листья(символ,частота)
@@ -157,9 +171,43 @@
             let listOfBits = encode input
             let listOfChars = ([for i in 0 .. ((listOfBits.Length)/8 - 1) -> copy listOfBits (i+7*i) 8]|> List.map binToDec|> List.map char ) @ [char(binToDec ((copy listOfBits (8*(listOfBits.Length/8)) (listOfBits.Length-(8*(listOfBits.Length/8))-1)) @ [for i in 0 .. listOfBits.Length%8 -> 0]))]
             let str = new StreamWriter(outputPath)
+
+            str.Write(([for i in leafs -> len (freq i)]|> List.reduce (+)) + (leafs.Length * 2))
+            str.Write('_')
+            for i in leafs do 
+                str.Write((fun node->match node with | Leaf(x,_)-> x | Node(_,_,_)->failwith "Expected Leaf, but here Node") i)
+                str.Write(len (freq i))
+                str.Write(freq i)
             for i in listOfChars do str.Write(i)
             str.Close()
         |'+' -> 
+//            let readFile (s:char list) =
+//                let mutable i = -1
+//                let parse c =
+//                    match c with
+//                    |'0' -> 0
+//                    |'1' -> 1
+//                    |'2' -> 2
+//                    |'3' -> 3
+//                    |'4' -> 4
+//                    |'5' -> 5
+//                    |'6' -> 6
+//                    |'7' -> 7
+//                    |'8' -> 8
+//                    |'9' -> 9
+//                    | _ -> failwith "couldnt parse"
+//                let rec length l =
+//                    i <- i+1
+//                    match s.Item(i) with
+//                    |'_' -> []
+//                            i <- i+1
+//                    | _  -> (parse (s.Item(i)))::(length l)
+//                let l = length s 
+//                for i in 0 .. l.Length -> l.Item(i)*(degree 10 (l.Length - i))
+//                printfn "%A" l
+//                let
+//
+
             let input = File.ReadAllText(inputPath)|> Seq.toList |> List.map int
             let decode bits = 
                 let rec decodeInner bitsLeft treeNode result =
@@ -176,4 +224,5 @@
             for i in (decode (bitbit@[0;0;0])) do str.Write(i)
             str.Close()
         | _ -> printfn"use:: inputPath outputPath x(+ -> decompress; - -> compress)" 
-//    archive "/Users/Rinat/Movies/test3.txt" "/Users/Rinat/Movies/test33.txt" '-'
+    archive "/Users/Rinat/Movies/test.txt" "/Users/Rinat/Movies/test33.txt" '-'
+
