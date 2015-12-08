@@ -68,9 +68,9 @@
                 let newNode = Node(freq minmin + freq min, minmin, min)
                 buildTree (newNode::rest)               
         
-    let rec archive (inputPath: string) (outputPath:string) (x: char) = 
+    let rec archive (inputPath: string) (outputPath:string) (x: int) = 
         match x with
-        |'-' -> 
+        |45 -> 
             let input = File.ReadAllText(inputPath)
             let leafs = otsev (List.rev (otsev2 ([for i in input -> (i, 1)]))) |> List.map (fun (x,y)->Leaf(x,y))
             let tree = buildTree leafs
@@ -109,7 +109,7 @@
                                     treeStr.Write((fun node->match node with | Leaf(_,x)-> x | Node(_,_,_)->failwith "Expected Leaf, but here Node") (leafs.Item(i)))
                                     treeStr.Write(" ")
             treeStr.Close()
-        |'+' -> 
+        |43 -> 
             let input = File.ReadAllText(inputPath+".enc")|> Seq.toList |> List.map int
             let leafs' = File.ReadAllText(inputPath+".tree").ToCharArray()|>Array.toList
             let mutable i = 1 
@@ -153,5 +153,10 @@
             for i in (decode bitbit) do str.Write(i)
             str.Close()
         | _ -> printfn"use:: inputPath outputPath x(+ -> decompress; - -> compress)" 
-//    archive "/Users/Rinat/Movies/test.txt" "/Users/Rinat/Movies/modif" '-'
-    archive "/Users/Rinat/Movies/modif" "/Users/Rinat/Movies/ololo.txt" '+'
+
+    printfn"use:: inputPath outputPath x(+ -> decompress; - -> compress)"
+    printfn"enter full path to file"
+    let in' = System.Console.Read()
+    printfn"enter full path to new zipped file"
+    let out' = System.Console.ReadLine()
+    printfn"make chose what to do with file: '-' -> compress; '+' -> decompress"
