@@ -76,6 +76,7 @@
             let input = System.Console.ReadLine()
             let leafs = otsev (List.rev (otsev2 ([for i in input -> (i, 1)]))) |> List.map (fun (x,y)->Leaf(x,y))
             let tree = buildTree leafs
+            printfn "%A" tree
             let huffmanCodeTable =
                let rec huffmanCodes tree =
                    match tree with
@@ -99,8 +100,8 @@
             let listOfBits = encode input
             printfn"%A" listOfBits
             let listOfChars = ([for i in 0 .. ((listOfBits.Length)/8 - 1) -> copy listOfBits (i+7*i) 8]|> List.map binToDec|> List.map char ) @ [char(binToDec ((copy listOfBits (8*(listOfBits.Length/8)) (listOfBits.Length-(8*(listOfBits.Length/8)))) @ [for i in 0 .. (7-(listOfBits.Length%8)) -> 0]))]
-            let rest0 = char (binToDec(decToBin(8-(listOfBits.Length%8))) + 100)
-            System.Console.Write(rest0) // количество последних лишних нулей
+            //let rest0 = char (binToDec(decToBin(8-(listOfBits.Length%8))) + 100)
+            //System.Console.Write(rest0) // количество последних лишних нулей
             for i in 0 .. (leafs.Length-1) do System.Console.Write((fun node->match node with | Leaf(x,_)-> x | Node(_,_,_)->failwith "Expected Leaf, but here Node") (leafs.Item(i)))//символы подряд
             System.Console.Write((fun node->match node with | Leaf(x,_)-> x | Node(_,_,_)->failwith "Expected Leaf, but here Node") (leafs.Item(0)))
             for i in 0 .. (leafs.Length-1) do 
@@ -110,15 +111,13 @@
         |43 -> 
             let input' = System.Console.ReadLine()
             let input = input'.ToCharArray()|> Array.toList
-            let mutable i = 2
-            let chars =(input.Item(1))::(seq{
-                while not (input.Item(1).Equals(input.Item(i))) do
+            let mutable i = 1
+            let chars =(input.Item(0))::(seq{
+                while not (input.Item(0).Equals(input.Item(i))) do
                  yield input.Item(i)
-                 printfn"%A" (input.Item(i))
                  i <- i+1
                 }|>Seq.toList)
             i <- i+1
-            printfn"%A" chars
             let rec num (x: int list)=
              match x with
              |[a] -> a 
@@ -140,8 +139,8 @@
             let freqs' = freqs @ [(num [(fun x -> match x with |'0'->0|'1'->1|'2'->2|'3'-> 3|'4'->4|'5'->5|'6'->6|'7'->7|'8'->8|'9'->9|_->0) (input.Item(i))])]
             let leafs = List.zip chars freqs' |> List.map (fun (x,y)->Leaf(x,y))
             let tree = buildTree leafs
+            printfn"%A" tree
             let decode bits = 
-
                 let rec decodeInner bitsLeft treeNode result =
                     match bitsLeft, treeNode with
                     | [], Node(_,_,_) -> result |>List.rev |> List.toArray 
@@ -151,10 +150,11 @@
                                               then decodeInner rest l result
                                               else decodeInner rest r result 
                 new string (decodeInner bits tree []) 
-            let delete = int(input.Item(0))-100
-            let ololo = [for x in (i+1) .. (input.Length-1) -> (decToBin (int (input.Item(x))))] |> List.concat
-            let bitbit = copy ololo 0 (ololo.Length-delete)
-            for i in (decode bitbit) do System.Console.Write(i)
+            //let delete = int(input.Item(0))-100
+            let ololo = [for x in (i+2) .. (input.Length-1) -> (decToBin (int (input.Item(x))))] |> List.concat
+            //let bitbit = copy ololo 0 (ololo.Length-delete)
+            printfn "%A" ololo
+            for c in (decode ololo) do System.Console.Write(c)
         | _ -> printfn"use:: inputPath outputPath x(+ -> decompress; - -> compress)" 
 
     printfn"use:: inputPath outputPath x(+ -> decompress; - -> compress)"
