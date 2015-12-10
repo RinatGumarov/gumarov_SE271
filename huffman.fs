@@ -44,9 +44,8 @@
         | (p::xs) -> p::otsev2 [ for x in xs do if fst x = fst p then yield (fst x, snd p + 1)
                                                 else yield x ]
         | [] -> []
-      
-    //получим список из пар (символ,частота) -> список из листьев
 
+    // length of number
     let rec len x =
         match x/10 with
         | 0 -> 1
@@ -77,7 +76,6 @@
             let input = System.Console.ReadLine()
             let leafs = otsev (List.rev (otsev2 ([for i in input -> (i, 1)]))) |> List.map (fun (x,y)->Leaf(x,y))
             let tree = buildTree leafs
-            printfn "%A" tree
             let huffmanCodeTable =
                let rec huffmanCodes tree =
                    match tree with
@@ -98,8 +96,9 @@
                 |> Array.map encodeChar
                 |> Array.concat
                 |> Array.toList
+            // get bits sequence
             let listOfBits = encode input
-            printfn"%A" listOfBits
+            //list of encoded chars
             let listOfChars = ([for i in 0 .. ((listOfBits.Length)/8 - 1) -> copy listOfBits (i+7*i) 8]|> List.map binToDec|> List.map char ) @ [char(binToDec ((copy listOfBits (8*(listOfBits.Length/8)) (listOfBits.Length-(8*(listOfBits.Length/8)))) @ [for i in 0 .. (7-(listOfBits.Length%8)) -> 0]))]
             let rest0 = char (binToDec(decToBin(8-(listOfBits.Length%8))) + 100)
             System.Console.Write(rest0) // количество последних лишних нулей
@@ -109,6 +108,7 @@
                                     System.Console.Write((fun node->match node with | Leaf(_,x)-> x | Node(_,_,_)->failwith "Expected Leaf, but here Node") (leafs.Item(i)))
                                     System.Console.Write(" ")
             for i in listOfChars do System.Console.Write(i)
+            //write to file
 //            let str = new StreamWriter("/Users/Rinat/Movies/ouytput.txt")
 //            str.Write(rest0)
 //            for i in 0 .. (leafs.Length-1) do str.Write((fun node->match node with | Leaf(x,_)-> x | Node(_,_,_)->failwith "Expected Leaf, but here Node") (leafs.Item(i)))//символы подряд
@@ -122,6 +122,7 @@
             let input' = System.Console.ReadLine()
             let input = input'.ToCharArray()|> Array.toList
             let mutable i = 2
+            //list of chars
             let chars =(input.Item(1))::(seq{
                 while not (input.Item(1).Equals(input.Item(i))) do
                  yield input.Item(i)
@@ -146,10 +147,11 @@
                     sp <- sp+1
                     i<-i+1
                 }|> Seq.toList) |> List.map num 
+            // lest of frequences
             let freqs' = freqs @ [(num [(fun x -> match x with |'0'->0|'1'->1|'2'->2|'3'-> 3|'4'->4|'5'->5|'6'->6|'7'->7|'8'->8|'9'->9|_->0) (input.Item(i))])]
+            // list of leafs
             let leafs = List.zip chars freqs' |> List.map (fun (x,y)->Leaf(x,y))
             let tree = buildTree leafs
-            printfn"%A" tree
             let decode bits = 
                 let rec decodeInner bitsLeft treeNode result =
                     match bitsLeft, treeNode with
@@ -160,14 +162,18 @@
                                               then decodeInner rest l result
                                               else decodeInner rest r result 
                 new string (decodeInner bits tree []) 
-            let delete = int(input.Item(0))-100
-            let ololo = [for x in (i+2) .. (input.Length-1) -> (decToBin (int (input.Item(x))))] |> List.concat
-            let bitbit = copy ololo 0 (ololo.Length-delete)
-            printfn "%A" ololo
-            for c in (decode bitbit) do System.Console.Write(c)
-        | _ -> printfn"use:: inputPath outputPath x(+ -> decompress; - -> compress)" 
+            let delete = int(input.Item(0))-100 //bits that should be deleted
+            let bufBitSeq = [for x in (i+2) .. (input.Length-1) -> (decToBin (int (input.Item(x))))] |> List.concat
+            let bitSeq = copy bufBitSeq 0 (bufBitSeq.Length-delete)
+            for c in (decode bitSeq) do System.Console.Write(c)
+        | _ ->
+            printfn"use:: compress or decompress? <c/d> or <-/+>"
+            let var = System.Console.Read()
+            System.Console.WriteLine()
+            archive  var
+            
 
-    printfn"use:: compress or decompress? <c/d>"
+    printfn"use:: compress or decompress? <c/d> or <-/+>"
     let var = System.Console.Read()
     System.Console.WriteLine()
     archive  var
