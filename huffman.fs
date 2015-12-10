@@ -108,8 +108,16 @@
                                     System.Console.Write((fun node->match node with | Leaf(_,x)-> x | Node(_,_,_)->failwith "Expected Leaf, but here Node") (leafs.Item(i)))
                                     System.Console.Write(" ")
             for i in listOfChars do System.Console.Write(i)
+            let str = new StreamWriter("/Users/Rinat/Movies/output.txt")
+            for i in 0 .. (leafs.Length-1) do str.Write((fun node->match node with | Leaf(x,_)-> x | Node(_,_,_)->failwith "Expected Leaf, but here Node") (leafs.Item(i)))//символы подряд
+            str.Write((fun node->match node with | Leaf(x,_)-> x | Node(_,_,_)->failwith "Expected Leaf, but here Node") (leafs.Item(0)))
+            for i in 0 .. (leafs.Length-1) do 
+                                    str.Write((fun node->match node with | Leaf(_,x)-> x | Node(_,_,_)->failwith "Expected Leaf, but here Node") (leafs.Item(i)))
+                                    str.Write(" ")
+            for i in listOfChars do str.Write(i)
+            str.Close()
         |43 -> 
-            let input' = System.Console.ReadLine()
+            let input' = (*File.ReadAllText("\Users\Rinat\Movies\output.txt")*)System.Console.ReadLine()
             let input = input'.ToCharArray()|> Array.toList
             let mutable i = 1
             let chars =(input.Item(0))::(seq{
