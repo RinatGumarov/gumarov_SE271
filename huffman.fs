@@ -167,13 +167,34 @@
             let bitSeq = copy bufBitSeq 0 (bufBitSeq.Length-delete)
             for c in (decode bitSeq) do System.Console.Write(c)
         | _ ->
+
             printfn"use:: compress or decompress? <c/d> or <-/+>"
             let var = System.Console.Read()
             System.Console.WriteLine()
             archive  var
             
+    
+//    printfn"use:: compress or decompress? <c/d> or <-/+>"
+//    let var = System.Console.Read()
+//    System.Console.WriteLine()
+//    archive  var
+    open System
+    open System.Text
+    // Create two different encodings.
+    let ascii = Encoding.ASCII;
+    let unicode = Encoding.Unicode;
 
-    printfn"use:: compress or decompress? <c/d> or <-/+>"
-    let var = System.Console.Read()
-    System.Console.WriteLine()
-    archive  var
+    // Convert the string into a byte array.
+    let unicodeBytes = unicode.GetBytes("olololololo");
+    System.Console.Write(unicodeBytes)
+    printfn "%A" unicodeBytes
+
+    // Perform the conversion from one encoding to the other.
+    let asciiBytes = Encoding.Convert(unicode, ascii, unicodeBytes);
+
+    let asciiChars' = ascii.GetChars(asciiBytes)
+    let asciiChars = new string (asciiChars')
+    printfn "%A" asciiChars
+    System.Console.Write(asciiChars)
+
+//    string asciiString = new string(asciiChars);
