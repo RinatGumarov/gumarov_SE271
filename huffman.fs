@@ -77,7 +77,10 @@
         match node with 
         | Leaf(x,_)-> x 
         | Node(_,_,_)->failwith "Expected Leaf, but here is a Node"
-    let parseOneDigitToInt x = match x with |'0'->0|'1'->1|'2'->2|'3'-> 3|'4'->4|'5'->5|'6'->6|'7'->7|'8'->8|'9'->9|_->failwith "Error! It is not a digit"
+    let parseOneDigitToInt x = 
+        match x with 
+        |'0'->0|'1'->1|'2'->2|'3'-> 3|'4'->4|'5'->5
+        |'6'->6|'7'->7|'8'->8|'9'->9|_->failwith "Error! It is not a digit"
         
     let rec archive (x: int) = 
         System.Console.Write("enter input:")
