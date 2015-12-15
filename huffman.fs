@@ -17,7 +17,11 @@
 
     //перевод последовательности из 8 битов в число
 
-    let binToDec (bin:int list) = [for i in 0 .. 7 -> bin.Item(i)*(if i = 7 then 1 else if i = 6 then 2 else ([for j in 0 .. (6-i) -> 2] |> List.reduce(*)))] |> List.sum
+    let binToDec (bin:int list) = [for i in 0 .. 7 -> bin.Item(i)*(if i = 7
+                                                                   then 1
+                                                                   else if i = 6
+                                                                        then 2
+                                                                        else ([for j in 0 .. (6-i) -> 2] |> List.reduce(*)))] |> List.sum
 
     let decToBin  (b:int) = 
         let rec dtb a =
@@ -41,7 +45,8 @@
 
     //при каждой следующей встрече символа, увеличим его частоту на единицу
     let rec otsev2 = function
-        | (p::xs) -> p::otsev2 [ for x in xs do if fst x = fst p then yield (fst x, snd p + 1)
+        | (p::xs) -> p::otsev2 [ for x in xs do if fst x = fst p 
+                                                then yield (fst x, snd p + 1)
                                                 else yield x ]
         | [] -> []
 
@@ -67,7 +72,12 @@
             | [node] -> node
             | minmin::min::rest -> 
                 let newNode = Node(freq minmin + freq min, minmin, min)
-                buildTree (newNode::rest)               
+                buildTree (newNode::rest)
+    let getCharFromLeaf node = 
+        match node with 
+        | Leaf(x,_)-> x 
+        | Node(_,_,_)->failwith "Expected Leaf, but here Node"
+    let parseOneDigitToInt 
         
     let rec archive (x: int) = 
         System.Console.Write("enter input:")
@@ -99,25 +109,34 @@
             // get bits sequence
             let listOfBits = encode input
             //list of encoded chars
-            let listOfChars = ([for i in 0 .. ((listOfBits.Length)/8 - 1) -> copy listOfBits (i+7*i) 8]|> List.map binToDec|> List.map char ) @ [char(binToDec ((copy listOfBits (8*(listOfBits.Length/8)) (listOfBits.Length-(8*(listOfBits.Length/8)))) @ [for i in 0 .. (7-(listOfBits.Length%8)) -> 0]))]
-            let rest0 = char (binToDec(decToBin(8-(listOfBits.Length%8))) + 100)
-            System.Console.Write(rest0) // количество последних лишних нулей
-            for i in 0 .. (leafs.Length-1) do System.Console.Write((fun node->match node with | Leaf(x,_)-> x | Node(_,_,_)->failwith "Expected Leaf, but here Node") (leafs.Item(i)))//символы подряд
-            System.Console.Write((fun node->match node with | Leaf(x,_)-> x | Node(_,_,_)->failwith "Expected Leaf, but here Node") (leafs.Item(0)))
+            let listOfChars = ([for i in 0 .. ((listOfBits.Length)/8 - 1) -> copy listOfBits (i+7*i) 8] // список из списков бит по 8 
+            |> List.map binToDec|> List.map char ) @                                                    // преобразование каждой восьмерки бит в символ
+                              [char(binToDec ((copy listOfBits (8*(listOfBits.Length/8)) (listOfBits.Length-(8*(listOfBits.Length/8)))) @ 
+                                                                                                        //список из остатка бит
+                                        [for i in 0 .. (7-(listOfBits.Length%8)) -> 0]))]               // приписываем нули чтобы получить список из 8ми элементов
+            let rest0 = char (binToDec(decToBin(8-(listOfBits.Length%8))) + 100)                        // количество приписанных нулей
+            System.Console.Write(rest0)                                                  // запишем сначала число бит, которые необходимо стереть
             for i in 0 .. (leafs.Length-1) do 
-                                    System.Console.Write((fun node->match node with | Leaf(_,x)-> x | Node(_,_,_)->failwith "Expected Leaf, but here Node") (leafs.Item(i)))
-                                    System.Console.Write(" ")
-            for i in listOfChars do System.Console.Write(i)
-            //write to file
-//            let str = new StreamWriter("/Users/Rinat/Movies/ouytput.txt")
-//            str.Write(rest0)
-//            for i in 0 .. (leafs.Length-1) do str.Write((fun node->match node with | Leaf(x,_)-> x | Node(_,_,_)->failwith "Expected Leaf, but here Node") (leafs.Item(i)))//символы подряд
-//            str.Write((fun node->match node with | Leaf(x,_)-> x | Node(_,_,_)->failwith "Expected Leaf, but here Node") (leafs.Item(0)))
-//            for i in 0 .. (leafs.Length-1) do 
-//                                    str.Write((fun node->match node with | Leaf(_,x)-> x | Node(_,_,_)->failwith "Expected Leaf, but here Node") (leafs.Item(i)))
-//                                    str.Write(" ")
-//            for i in listOfChars do str.Write(i)
-//            str.Close()
+                  System.Console.Write(getCharFromLeaf (leafs.Item(i)))                  //символы, присутствующие в исходном файле подряд
+            System.Console.Write(getCharFromLeaf (leafs.Item(0)))                        //запишем снова первый символ чтобы при считывании узнать где они заканчиваются
+            for i in 0 .. (leafs.Length-1) do 
+                                    System.Console.Write(getCharFromLeaf (leafs.Item(i)))// запишем частоты символов
+                                    System.Console.Write(" ")                            // через пробел
+            for i in listOfChars do System.Console.Write(i)                              // теперь запишем закодированный input
+
+            let str = new StreamWriter("output.txt")
+            str.Write(rest0)
+
+            for i in 0 .. (leafs.Length-1) do 
+                     str.Write(getCharFromLeaf (leafs.Item(i)))
+
+            str.Write(getCharFromLeaf (leafs.Item(0)))
+
+            for i in 0 .. (leafs.Length-1) do 
+                                    str.Write(getCharFromLeaf (leafs.Item(i)))
+                                    str.Write(" ")
+            for i in listOfChars do str.Write(i)
+            str.Close()
         |43|100 -> 
             let input' = System.Console.ReadLine()
             let input = input'.ToCharArray()|> Array.toList
@@ -174,27 +193,31 @@
             archive  var
             
     
-//    printfn"use:: compress or decompress? <c/d> or <-/+>"
-//    let var = System.Console.Read()
-//    System.Console.WriteLine()
-//    archive  var
-    open System
-    open System.Text
+    printfn"use:: compress or decompress? <c/d> or <-/+>"
+    let var = System.Console.Read()
+    System.Console.WriteLine()
+    archive  var
+    
     // Create two different encodings.
-    let ascii = Encoding.ASCII;
-    let unicode = Encoding.Unicode;
-
-    // Convert the string into a byte array.
-    let unicodeBytes = unicode.GetBytes("olololololo");
-    System.Console.Write(unicodeBytes)
-    printfn "%A" unicodeBytes
-
-    // Perform the conversion from one encoding to the other.
-    let asciiBytes = Encoding.Convert(unicode, ascii, unicodeBytes);
-
-    let asciiChars' = ascii.GetChars(asciiBytes)
-    let asciiChars = new string (asciiChars')
-    printfn "%A" asciiChars
-    System.Console.Write(asciiChars)
-
-//    string asciiString = new string(asciiChars);
+//    let ascii = Encoding.ASCII;
+//    let unicode = Encoding.Unicode;
+//
+//    // Convert the string into a byte array.
+//    let unicodeBytes = unicode.GetBytes("olololololo my name is rinaat коко-ко");
+//    for i in unicodeBytes do System.Console.Write(i.ToString())
+//    printfn "%A" unicodeBytes
+//
+//    // Perform the conversion from one encoding to the other.
+//    let asciiBytes = Encoding.Convert(unicode, ascii, unicodeBytes);
+//
+//    printfn "%A" asciiBytes
+//
+//    let asciiChars' = ascii.GetChars(asciiBytes)
+//    let asciiChars = new string (asciiChars')
+//    printfn "%A" asciiChars
+//    System.Console.Write(asciiChars)
+//
+//    let unicodeChars = unicode.GetChars(unicodeBytes)
+//    printfn"uni %A" unicodeChars
+//    System.Console.Write(unicodeChars)
+////    string asciiString = new string(asciiChars);
