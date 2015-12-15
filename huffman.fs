@@ -76,8 +76,8 @@
     let getCharFromLeaf node = 
         match node with 
         | Leaf(x,_)-> x 
-        | Node(_,_,_)->failwith "Expected Leaf, but here Node"
-    let parseOneDigitToInt 
+        | Node(_,_,_)->failwith "Expected Leaf, but here is a Node"
+    let parseOneDigitToInt x = match x with |'0'->0|'1'->1|'2'->2|'3'-> 3|'4'->4|'5'->5|'6'->6|'7'->7|'8'->8|'9'->9|_->failwith "Error! It is not a digit"
         
     let rec archive (x: int) = 
         System.Console.Write("enter input:")
@@ -101,7 +101,7 @@
                 let encodeChar c =
                     match huffmanCodeTable |> Map.tryFind c with
                     | Some bits -> bits
-                    | None -> failwith "No frequency info provided for character %c" c
+                    | None -> failwith "No code provided for character"
                 str.ToCharArray()
                 |> Array.map encodeChar
                 |> Array.concat
@@ -162,12 +162,12 @@
                             yield input.Item(i)
                             printfn "%A" (input.Item(i))
                             i <- i + 1
-                    }|> Seq.toList)|>List.map (fun x -> match x with |'0'->0|'1'->1|'2'->2|'3'-> 3|'4'->4|'5'->5|'6'->6|'7'->7|'8'->8|'9'->9|_->0)
+                    }|> Seq.toList)|>List.map parseOneDigitToInt
                     sp <- sp+1
                     i<-i+1
-                }|> Seq.toList) |> List.map num 
+                } |> Seq.toList) |> List.map num 
             // lest of frequences
-            let freqs' = freqs @ [(num [(fun x -> match x with |'0'->0|'1'->1|'2'->2|'3'-> 3|'4'->4|'5'->5|'6'->6|'7'->7|'8'->8|'9'->9|_->0) (input.Item(i))])]
+            let freqs' = freqs @ [(num [parseOneDigitToInt (input.Item(i))])]
             // list of leafs
             let leafs = List.zip chars freqs' |> List.map (fun (x,y)->Leaf(x,y))
             let tree = buildTree leafs
@@ -191,33 +191,18 @@
             let var = System.Console.Read()
             System.Console.WriteLine()
             archive  var
-            
+
+    [<EntryPoint>]
+    let main argv = 
+        let argList = argv |> List.ofSeq
+        match argList with
+        |[fst]-> printfn"ololo"
+        |[]->printfn"nothing"
+        |_-> printfn"oops"
+        printfn "%A" argv
+        0
     
-    printfn"use:: compress or decompress? <c/d> or <-/+>"
-    let var = System.Console.Read()
-    System.Console.WriteLine()
-    archive  var
-    
-    // Create two different encodings.
-//    let ascii = Encoding.ASCII;
-//    let unicode = Encoding.Unicode;
-//
-//    // Convert the string into a byte array.
-//    let unicodeBytes = unicode.GetBytes("olololololo my name is rinaat коко-ко");
-//    for i in unicodeBytes do System.Console.Write(i.ToString())
-//    printfn "%A" unicodeBytes
-//
-//    // Perform the conversion from one encoding to the other.
-//    let asciiBytes = Encoding.Convert(unicode, ascii, unicodeBytes);
-//
-//    printfn "%A" asciiBytes
-//
-//    let asciiChars' = ascii.GetChars(asciiBytes)
-//    let asciiChars = new string (asciiChars')
-//    printfn "%A" asciiChars
-//    System.Console.Write(asciiChars)
-//
-//    let unicodeChars = unicode.GetChars(unicodeBytes)
-//    printfn"uni %A" unicodeChars
-//    System.Console.Write(unicodeChars)
-////    string asciiString = new string(asciiChars);
+//    printfn"use:: compress or decompress? <c/d> or <-/+>"
+//    let var = System.Console.Read()
+//    System.Console.WriteLine()
+//    archive  var
