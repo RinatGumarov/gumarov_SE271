@@ -82,10 +82,10 @@
         |'0'->0|'1'->1|'2'->2|'3'-> 3|'4'->4|'5'->5
         |'6'->6|'7'->7|'8'->8|'9'->9|_->failwith "Error! It is not a digit"
         
-    let rec archive (x: int) = 
+    let rec archive (x: string) = 
         System.Console.Write("enter input:")
         match x with
-        |45|99 -> 
+        |"-"|"c" -> 
             let input = System.Console.ReadLine()
             let leafs = otsev (List.rev (otsev2 ([for i in input -> (i, 1)]))) |> List.map (fun (x,y)->Leaf(x,y))
             let tree = buildTree leafs
@@ -140,7 +140,7 @@
                                     str.Write(" ")
             for i in listOfChars do str.Write(i)
             str.Close()
-        |43|100 -> 
+        |"+"|"d" -> 
             let input' = System.Console.ReadLine()
             let input = input'.ToCharArray()|> Array.toList
             let mutable i = 2
@@ -185,24 +185,21 @@
                                               else decodeInner rest r result 
                 new string (decodeInner bits tree []) 
             let delete = int(input.Item(0))-100 //bits that should be deleted
-            let bufBitSeq = [for x in (i+2) .. (input.Length-1) -> (decToBin (int (input.Item(x))))] |> List.concat
+            let bufBitSeq = [for x in (i+2) .. (input.Length-1) -> 
+                               (decToBin (int (input.Item(x))))] |> List.concat
             let bitSeq = copy bufBitSeq 0 (bufBitSeq.Length-delete)
             for c in (decode bitSeq) do System.Console.Write(c)
         | _ ->
 
             printfn"use:: compress or decompress? <c/d> or <-/+>"
-            let var = System.Console.Read()
-            System.Console.WriteLine()
-            archive  var
 
     [<EntryPoint>]
     let main argv = 
         let argList = argv |> List.ofSeq
         match argList with
-        |[fst]-> printfn"ololo"
+        |[fst]-> archive fst
         |[]->printfn"nothing"
         |_-> printfn"oops"
-        printfn "%A" argv
         0
     
 //    printfn"use:: compress or decompress? <c/d> or <-/+>"
