@@ -1,5 +1,6 @@
 ﻿module HuffmanCompression = 
     open System.IO
+    open System.Collections.Generic
 // дерево
 // листья дерева хранят в себе символ и сколько раз этот символ встречается(частоту)
 // все остальные вершины хранят ссылки на поддеревья и сумму частот поддеревьев
@@ -50,7 +51,7 @@
                                                 then yield (fst x, snd p + 1)
                                                 else yield x ]
         | [] -> []
-
+    
     // length of dec number
     let rec len x =
         match x/10 with  // делим нацело на десять -> убираем цифру с конца
@@ -90,9 +91,17 @@
         match x with
         |"-"|"c" ->                                                                     //compress 
             let input = File.ReadAllText(inputPath)                                     // считать input
-            let leafs = otsev (List.rev (otsev2 ([for i in input -> (i, 1)])))          // выделить листья из input
-                        |> List.map (fun (x,y)->Leaf(x,y))
-            let tree = buildTree leafs                                                  //построить дерево из листьев
+            let mutable j  = 0
+            let leafsDictionary = new Dictionary<char, int>()
+            for i in input do
+                if leafsDictionary.ContainsKey(i) then
+                    leafsDictionary.[i] <- leafsDictionary.[i]+1
+                    else
+                    leafsDictionary.[i] <- 1
+            let leafs = [for i in leafsDictionary -> Leaf(i.Key,i.Value)]
+            printfn "leafs done"
+            let tree = buildTree leafs
+            printfn "tree built"                                                  //построить дерево из листьев
             let huffmanCodeTable =
                let rec huffmanCodes tree =
                    match tree with
@@ -115,6 +124,7 @@
                 |> Array.toList
             // get bits sequence
             let listOfBits = encode input
+            printfn"encoded"
             //list of encoded chars
             let listOfChars = ([for i in 0 .. ((listOfBits.Length)/8 - 1) -> 
                                 copy listOfBits (i+7*i) 8]                               // список из списков бит по 8 
@@ -122,6 +132,7 @@
                                 [char(binToDec((copy listOfBits (8*(listOfBits.Length/8))// копирование остатка бит с позиции где заканчивается список из бит по 8
                                                     (listOfBits.Length-(8*(listOfBits.Length/8)))) @ //число копируемых бит
                                        [for i in 0 .. (7-(listOfBits.Length%8)) -> 0]))] // приписываем нули чтобы получить список из 8ми элементов
+            printfn"all done"
             let rest0 = char (binToDec(decToBin(8-(listOfBits.Length%8))) + 100)         // количество приписанных нулей
             let str = new StreamWriter(outputPath + "output.txt")                                     // 
             str.Write(rest0)                                                             // запишем число бит, которые не нужны
