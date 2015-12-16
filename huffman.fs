@@ -86,11 +86,10 @@
         |'0'->0|'1'->1|'2'->2|'3'-> 3|'4'->4|'5'->5
         |'6'->6|'7'->7|'8'->8|'9'->9|_->failwith "Error! It is not a digit"
 
-    let rec archive (x: string) = 
+    let rec archive (x: string) (inputPath: string) (outputPath: string)= 
         match x with
         |"-"|"c" ->                                                                     //compress 
-            System.Console.Write("enter input:")                                        // 
-            let input = System.Console.ReadLine()                                       // считать input
+            let input = File.ReadAllText(inputPath)                                     // считать input
             let leafs = otsev (List.rev (otsev2 ([for i in input -> (i, 1)])))          // выделить листья из input
                         |> List.map (fun (x,y)->Leaf(x,y))
             let tree = buildTree leafs                                                  //построить дерево из листьев
@@ -124,18 +123,22 @@
                                                     (listOfBits.Length-(8*(listOfBits.Length/8)))) @ //число копируемых бит
                                        [for i in 0 .. (7-(listOfBits.Length%8)) -> 0]))] // приписываем нули чтобы получить список из 8ми элементов
             let rest0 = char (binToDec(decToBin(8-(listOfBits.Length%8))) + 100)         // количество приписанных нулей
-            System.Console.Write(rest0)                                                  // запишем сначала число бит, которые необходимо стереть
+            let str = new StreamWriter(outputPath + "output.txt")                                     // 
+            str.Write(rest0)                                                             // запишем число бит, которые не нужны
+
+            for i in 0 .. (leafs.Length-1) do           
+                     str.Write(getCharFromLeaf (leafs.Item(i)))                          // запишем все символы подряд
+
+            str.Write(getCharFromLeaf (leafs.Item(0)))                                   // запишем снова первый символ чтобы понять где остановить чтение
+
             for i in 0 .. (leafs.Length-1) do 
-                  System.Console.Write(getCharFromLeaf (leafs.Item(i)))                  //символы, присутствующие в исходном файле подряд
-            System.Console.Write(getCharFromLeaf (leafs.Item(0)))                        //запишем снова первый символ чтобы при считывании узнать где они заканчиваются
-            for i in 0 .. (leafs.Length-1) do 
-                                    System.Console.Write(freq (leafs.Item(i)))           // запишем частоты символов
-                                    System.Console.Write(" ")                            // через пробел
-            for i in listOfChars do System.Console.Write(i)                              // теперь запишем закодированный input
-            System.Console.WriteLine()                                                   // переход на следующую строку
-        |"+"|"d" -> 
-            System.Console.Write("enter input:")
-            let input' = System.Console.ReadLine()                              // считаем input
+                                    str.Write(freq (leafs.Item(i)))                      // запишем частоты
+                                    str.Write(" ")                                       // через пробел
+            for i in listOfChars do str.Write(i)                                         // и наконец закодированный input
+            str.Close()
+            System.Console.WriteLine("done")
+        |"+"|"d" ->                                                             // decompress
+            let input' = File.ReadAllText(inputPath)                            // считаем input
             let input = input'.ToCharArray()|> Array.toList                     // разобьем input на список символов
             let mutable i = 2                                                   // введем переменную для обхода списка (0 - число лишних нулей, 1- первый символ)
             //list of chars
@@ -182,8 +185,10 @@
             let bufBitSeq = [for x in (i) .. (input.Length-1) ->               //(100 - просто число которое мы прибавили при сжатии чтобы получился символ)
                                (decToBin (int (input.Item(x))))] |> List.concat// переведем каждый символ прочтенной строки сначала в число а потов в список из 0 и 1
             let bitSeq = copy bufBitSeq 0 (bufBitSeq.Length-delete)            // скопируем только нужную часть без лишних нулей в конце
-            for c in (decode bitSeq) do System.Console.Write(c)                // выведем результат на экран
-            System.Console.WriteLine()
+            let str = new StreamWriter(outputPath + "/output.trn")
+            for c in (decode bitSeq) do str.Write(c)                           // выведем результат в файл
+            str.Close()
+            System.Console.WriteLine("done")
         | _ ->
             printfn"use:: compress or decompress? <c/d> or <-/+>"
 
@@ -191,7 +196,7 @@
     let main argv = 
         let argList = argv |> List.ofSeq
         match argList with
-        |[fst]-> archive fst
+        |[fst;snd;thr]-> archive fst snd thr
         |[]->printfn"nothing. use:: compress or decompress? <c/d> or <-/+>"
-        |_-> printfn"oops. too much arguments. use:: compress or decompress? <c/d> or <-/+>"
+        |_-> printfn"oops. something goes wrong. use:: compress or decompress? <c/d> or <-/+>"
         0
