@@ -87,7 +87,8 @@
         match x with
         |"-"|"c" -> 
             let input = System.Console.ReadLine()
-            let leafs = otsev (List.rev (otsev2 ([for i in input -> (i, 1)]))) |> List.map (fun (x,y)->Leaf(x,y))
+            let leafs = otsev (List.rev (otsev2 ([for i in input -> (i, 1)]))) 
+                        |> List.map (fun (x,y)->Leaf(x,y))
             let tree = buildTree leafs
             let huffmanCodeTable =
                let rec huffmanCodes tree =
@@ -112,21 +113,22 @@
             // get bits sequence
             let listOfBits = encode input
             //list of encoded chars
-            let listOfChars = ([for i in 0 .. ((listOfBits.Length)/8 - 1) -> copy listOfBits (i+7*i) 8] // список из списков бит по 8 
-            |> List.map binToDec|> List.map char ) @                                                    // преобразование каждой восьмерки бит в символ
-                              [char(binToDec ((copy listOfBits (8*(listOfBits.Length/8)) (listOfBits.Length-(8*(listOfBits.Length/8)))) @ 
-                                                                                                        //список из остатка бит
-                                        [for i in 0 .. (7-(listOfBits.Length%8)) -> 0]))]               // приписываем нули чтобы получить список из 8ми элементов
-            let rest0 = char (binToDec(decToBin(8-(listOfBits.Length%8))) + 100)                        // количество приписанных нулей
+            let listOfChars = ([for i in 0 .. ((listOfBits.Length)/8 - 1) -> 
+                                copy listOfBits (i+7*i) 8]                               // список из списков бит по 8 
+                                |> List.map binToDec|> List.map char ) @                 // преобразование каждой восьмерки бит в символ
+                                [char(binToDec((copy listOfBits (8*(listOfBits.Length/8))// копирование остатка бит с позиции где заканчивается список из бит по 8
+                                                    (listOfBits.Length-(8*(listOfBits.Length/8)))) @ //число копируемых бит
+                                       [for i in 0 .. (7-(listOfBits.Length%8)) -> 0]))] // приписываем нули чтобы получить список из 8ми элементов
+            let rest0 = char (binToDec(decToBin(8-(listOfBits.Length%8))) + 100)         // количество приписанных нулей
             System.Console.Write(rest0)                                                  // запишем сначала число бит, которые необходимо стереть
             for i in 0 .. (leafs.Length-1) do 
                   System.Console.Write(getCharFromLeaf (leafs.Item(i)))                  //символы, присутствующие в исходном файле подряд
             System.Console.Write(getCharFromLeaf (leafs.Item(0)))                        //запишем снова первый символ чтобы при считывании узнать где они заканчиваются
             for i in 0 .. (leafs.Length-1) do 
-                                    System.Console.Write(getCharFromLeaf (leafs.Item(i)))// запишем частоты символов
+                                    System.Console.Write(freq (leafs.Item(i)))           // запишем частоты символов
                                     System.Console.Write(" ")                            // через пробел
             for i in listOfChars do System.Console.Write(i)                              // теперь запишем закодированный input
-
+            System.Console.WriteLine()                                                   // переход на следующую строку
             let str = new StreamWriter("output.txt")
             str.Write(rest0)
 
@@ -163,7 +165,6 @@
                     yield (seq{
                         while not (' '.Equals(input.Item(i))) do
                             yield input.Item(i)
-                            printfn "%A" (input.Item(i))
                             i <- i + 1
                     }|> Seq.toList)|>List.map parseOneDigitToInt
                     sp <- sp+1
@@ -190,7 +191,6 @@
             let bitSeq = copy bufBitSeq 0 (bufBitSeq.Length-delete)
             for c in (decode bitSeq) do System.Console.Write(c)
         | _ ->
-
             printfn"use:: compress or decompress? <c/d> or <-/+>"
 
     [<EntryPoint>]
@@ -198,11 +198,6 @@
         let argList = argv |> List.ofSeq
         match argList with
         |[fst]-> archive fst
-        |[]->printfn"nothing"
-        |_-> printfn"oops"
+        |[]->printfn"nothing. use:: compress or decompress? <c/d> or <-/+>"
+        |_-> printfn"oops. too much arguments. use:: compress or decompress? <c/d> or <-/+>"
         0
-    
-//    printfn"use:: compress or decompress? <c/d> or <-/+>"
-//    let var = System.Console.Read()
-//    System.Console.WriteLine()
-//    archive  var
