@@ -23,7 +23,6 @@
                                                                    else if i = 6
                                                                         then 2
                                                                         else ([for j in 0 .. (6-i) -> 2] |> List.reduce(*)))] |> List.sum
-
     //translate number<256 into list of bits binary form. example 6 -> [0;0;0;0;0;1;1;0]
     let decToBin  (b:int) = 
         let rec dtb a =
@@ -190,7 +189,6 @@
             System.Console.WriteLine("done")
         | _ ->
             printfn"use:: compress or decompress? <c/d> or <-/+>"
-
     [<EntryPoint>]
     let main argv = 
         let argList = argv |> List.ofSeq
