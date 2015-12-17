@@ -37,21 +37,8 @@
         add0 (List.rev (dtb b))
 
     //копирование count элементов списка list начиная с index
-    let copy (list: int list) index count = [for i in index .. (index + count - 1) -> list.Item(i)]
-     
-
-    //убрать повторяющиеся элементы списка, оставив только первое вхождение (повторяются только символы, частоты могуут быть разными)
-    let rec otsev = function
-        | (p::xs) -> p::otsev [ for x in xs do if fst x <> fst p then yield x ]
-        | [] -> []
-
-    //при каждой следующей встрече символа, увеличим его частоту на единицу
-    let rec otsev2 = function
-        | (p::xs) -> p::otsev2 [ for x in xs do if fst x = fst p 
-                                                then yield (fst x, snd p + 1)
-                                                else yield x ]
-        | [] -> []
-    
+    let copy (list: int list) index count = list.GetSlice(Some(index), Some(index+count-1))
+ 
     // length of dec number
     let rec len x =
         match x/10 with  // делим нацело на десять -> убираем цифру с конца
