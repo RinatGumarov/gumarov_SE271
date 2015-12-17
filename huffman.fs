@@ -1,15 +1,15 @@
 ﻿module HuffmanCompression = 
     open System.IO
     open System.Collections.Generic
-// дерево
-// листья дерева хранят в себе символ и сколько раз этот символ встречается(частоту)
-// все остальные вершины хранят ссылки на поддеревья и сумму частот поддеревьев
+// tree
+// leafs contains char and frequency of this char
+// Nodes contais sum of frequencec of theirs children and theirs children
     
     type Tree = 
         | Leaf of char * int
         | Node of int * Tree * Tree
 
-    // возведение числа х в положительную степень d
+    // exponentiation x to positive degree d
     let rec degree x d =
         match d with
         |0 -> 1
@@ -17,14 +17,14 @@
         |_ -> x * (degree x (d-1))
 
 
-    //перевод последовательности из 8 битов в число, напр. [0;0;0;0;0;0;1;0] -> 2
+    //translate list of 8 bits to number, example [0;0;0;0;0;0;1;0] -> 2
     let binToDec (bin:int list) = [for i in 0 .. 7 -> bin.Item(i)*(if i = 7
                                                                    then 1   // 2^0
                                                                    else if i = 6
                                                                         then 2
                                                                         else ([for j in 0 .. (6-i) -> 2] |> List.reduce(*)))] |> List.sum
 
-    // перевод числа <256 в последовательность 0 и 1 двоичная запись в списке напр. 6 -> [0;0;0;0;0;1;1;0]
+    //translate number<256 into list of bits binary form. example 6 -> [0;0;0;0;0;1;1;0]
     let decToBin  (b:int) = 
         let rec dtb a =
             match a/2 with
@@ -36,39 +36,39 @@
             | _ -> add0 (0::a)
         add0 (List.rev (dtb b))
 
-    //копирование count элементов списка list начиная с index
+    //copying count elements from list begin from index
     let copy (list: int list) index count = list.GetSlice(Some(index), Some(index+count-1))
  
     // length of dec number
     let rec len x =
-        match x/10 with  // делим нацело на десять -> убираем цифру с конца
+        match x/10 with  // because it decimal
         | 0 -> 1
         | _ -> 1 + (len (x/10))
 
-    // получим чистоту из вершины
+    // get frequency of node
     let freq node = 
             match node with
             | Leaf(_,p) -> p
             | Node(p,_,_) -> p
 
-            //создание дерева по списку из листьев
-            //нижний уровень - листья(символ,частота)
-            //сортируем элемент по частоте, чтобы выбрать два с наименьшей
-            //создаем новую вершину по принципу - вершины с наименьшей частотой - сыновья, частота = сумма частот сыновей
+            //creating tree with list of leafs
+            //button - leafs(charackter*integer)
+            //sorting elements with frequency, then choose 2 minimums
+            //creating new node - 2 minimums - children, frequency=(freq child1) + (freq child2)
     
     let rec buildTree roots =
-            match roots |> List.sortBy freq with                                   //сортировка по частоте
+            match roots |> List.sortBy freq with                                   //sortinf with frequency
             | [] -> failwith "Error! empty list"
             | [node] -> node
-            | minmin::min::rest ->                                                 //берем две вершины с наименьшей частотой
-                let newNode = Node(freq minmin + freq min, minmin, min)            // создаем новую вершину
-                buildTree (newNode::rest)                                          // продолжаем строить дерево заменив две вершины на новую
-                                                                                   // получить символ из листа
+            | minmin::min::rest ->                                                 //choose 2 nodes with minimum freqs
+                let newNode = Node(freq minmin + freq min, minmin, min)            //creating new node
+                buildTree (newNode::rest)                                          //continue with new node
+                                                                                   // get char from Leaf
     let getCharFromLeaf node = 
         match node with 
         | Leaf(x,_)-> x 
         | Node(_,_,_)->failwith "Expected Leaf, but here is a Node"
-                                                                                   // преобразовать цифру типа char в тип int
+                                                                                   // parse digit to integer
     let parseOneDigitToInt x = 
         match x with 
         |'0'->0|'1'->1|'2'->2|'3'-> 3|'4'->4|'5'->5
@@ -77,7 +77,7 @@
     let rec archive (x: string) (inputPath: string) (outputPath: string)= 
         match x with
         |"-"|"c" ->                                                                     //compress 
-            let input = File.ReadAllText(inputPath)                                     // считать input
+            let input = File.ReadAllText(inputPath)                                     //read input
             let mutable j  = 0
             let leafsDictionary = new Dictionary<char, int>()
             for i in input do
@@ -88,25 +88,25 @@
             let leafs = [for i in leafsDictionary -> Leaf(i.Key,i.Value)]
             printfn "leafs done"
             let tree = buildTree leafs
-            printfn "tree built"                                                  //построить дерево из листьев
+            printfn "tree built"                                                  //create tree from leafs
             let huffmanCodeTable =
                let rec huffmanCodes tree =
                    match tree with
                    | Leaf (c,_) -> [(c,[])]
                    | Node (_, left, right) ->
-                       let leftCodes = huffmanCodes left |> List.map (fun (c, code) -> (c,1::code))  // если идем по левой ветке, то записываем 1
-                       let rightCodes = huffmanCodes right |> List.map (fun (c, code) -> (c,0::code))// если идем по правой ветке, то записываем 0
-                       List.append leftCodes rightCodes                                              // склеим списки из пар символ;код
-               huffmanCodes tree                                                                     // построим таблицу символов
+                       let leftCodes = huffmanCodes left |> List.map (fun (c, code) -> (c,1::code))  // left branch -> add 1
+                       let rightCodes = huffmanCodes right |> List.map (fun (c, code) -> (c,0::code))// right branch -> add 0
+                       List.append leftCodes rightCodes                                              // append lists
+               huffmanCodes tree                                                                     // create huffman code table
                |> List.map (fun (c, code) -> (c, List.toArray code))
-               |> Map.ofList;                                                                        // преобразуем список пар в карту
+               |> Map.ofList;                                                                        // list to map
             let encode (str : string) =
-                let encodeChar c =                                                                   //сопоставим символу его код
+                let encodeChar c =                                                                   //replace char with its code
                     match huffmanCodeTable |> Map.tryFind c with
                     | Some bits -> bits
                     | None -> failwith "No code provided for character"
                 str.ToCharArray()
-                |> Array.map encodeChar                                                              // сопоставим каждому символу входной строки его код
+                |> Array.map encodeChar                                                              // replace all chars in array with its codes
                 |> Array.concat
                 |> Array.toList
             // get bits sequence
@@ -114,77 +114,77 @@
             printfn"encoded"
             //list of encoded chars
             let listOfChars = ([for i in 0 .. ((listOfBits.Length)/8 - 1) -> 
-                                copy listOfBits (i+7*i) 8]                               // список из списков бит по 8 
-                                |> List.map binToDec|> List.map char ) @                 // преобразование каждой восьмерки бит в символ
-                                [char(binToDec((copy listOfBits (8*(listOfBits.Length/8))// копирование остатка бит с позиции где заканчивается список из бит по 8
-                                                    (listOfBits.Length-(8*(listOfBits.Length/8)))) @ //число копируемых бит
-                                       [for i in 0 .. (7-(listOfBits.Length%8)) -> 0]))] // приписываем нули чтобы получить список из 8ми элементов
+                                copy listOfBits (i+7*i) 8]                               // list of list of 8 bits 
+                                |> List.map binToDec|> List.map char ) @                 // translate list of bit to decimal
+                                [char(binToDec((copy listOfBits (8*(listOfBits.Length/8))// copying rest bits
+                                                    (listOfBits.Length-(8*(listOfBits.Length/8)))) @ //count of copying bits
+                                       [for i in 0 .. (7-(listOfBits.Length%8)) -> 0]))] // add 0s to get list with 8 bits
             printfn"all done"
-            let rest0 = char (binToDec(decToBin(8-(listOfBits.Length%8))) + 100)         // количество приписанных нулей
+            let rest0 = char (binToDec(decToBin(8-(listOfBits.Length%8))) + 100)         // count of rest 0s
             let str = new StreamWriter(outputPath + "output.txt")                                     // 
-            str.Write(rest0)                                                             // запишем число бит, которые не нужны
+            str.Write(rest0)                                                             // write count of bits that we should delete
 
             for i in 0 .. (leafs.Length-1) do           
-                     str.Write(getCharFromLeaf (leafs.Item(i)))                          // запишем все символы подряд
+                     str.Write(getCharFromLeaf (leafs.Item(i)))                          // write all chars
 
-            str.Write(getCharFromLeaf (leafs.Item(0)))                                   // запишем снова первый символ чтобы понять где остановить чтение
+            str.Write(getCharFromLeaf (leafs.Item(0)))                                   // write first symbol so we can stop reading on it
 
             for i in 0 .. (leafs.Length-1) do 
-                                    str.Write(freq (leafs.Item(i)))                      // запишем частоты
-                                    str.Write(" ")                                       // через пробел
-            for i in listOfChars do str.Write(i)                                         // и наконец закодированный input
+                                    str.Write(freq (leafs.Item(i)))                      // write frequences
+                                    str.Write(" ")                                       // with space
+            for i in listOfChars do str.Write(i)                                         // and encoded input
             str.Close()
             System.Console.WriteLine("done")
         |"+"|"d" ->                                                             // decompress
-            let input' = File.ReadAllText(inputPath)                            // считаем input
-            let input = input'.ToCharArray()|> Array.toList                     // разобьем input на список символов
-            let mutable i = 2                                                   // введем переменную для обхода списка (0 - число лишних нулей, 1- первый символ)
+            let input' = File.ReadAllText(inputPath)                            // read input
+            let input = input'.ToCharArray()|> Array.toList                     // put input to list of chars
+            let mutable i = 2                                                   // variable to iterate read
             //list of chars
             let chars =(input.Item(1))::(seq{
-                while not (input.Item(1).Equals(input.Item(i))) do              // считываем символы пока не встретится идентичный первому
+                while not (input.Item(1).Equals(input.Item(i))) do              // read chars while it is not equal to first char
                  yield input.Item(i)
                  i <- i+1
                 }|>Seq.toList)
             i <- i+1
-            let rec num (x: int list)=                                          // перевод разбитого в список по одной цифре десятичного числа в число
+            let rec num (x: int list)=                                          // concat digits to number
              match x with
              |[a] -> a 
              |[x;y] -> 10*x+y
              |(l::r::ls) -> num ((10*l+r)::ls)
              |_ -> 0
-            let mutable sp = 0                                                  // введем переменную чтобы считать количество пробелов(после каждого числа ставится пробел)
-            let freqs' = (seq{                                                  // чисел столько же сколько и символов
-                while sp < (chars.Length) do                                    // пока количество пробелов не сравнялось с количеством символов
+            let mutable sp = 0                                                  // variable to count spaces
+            let freqs' = (seq{                                                  // count of numbers and chars are equal
+                while sp < (chars.Length) do                                    // while spaces count not equal to count of chars
                     yield (seq{
-                        while not (' '.Equals(input.Item(i))) do                // пока текущий элемент не является пробелом
-                            yield input.Item(i)                                 // запишем элемент в список
-                            i <- i + 1                                          // инкриментируем переменную обхода
-                    }|> Seq.toList)|>List.map parseOneDigitToInt                // каждый символ цифры переведем в int
-                    sp <- sp+1                                                  // инкриментируем кол-во пробелов
-                    i<-i+1                                                      // инкрементиируем переменную обхода
-                } |> Seq.toList) |> List.map num                                // из списка списков цифр сделаем список чисел
+                        while not (' '.Equals(input.Item(i))) do                // while current element is not equal to space
+                            yield input.Item(i)                                 // yield this element to list
+                            i <- i + 1                                          // increment i
+                    }|> Seq.toList)|>List.map parseOneDigitToInt                // parse every char of digit to digit
+                    sp <- sp+1                                                  // incremeent count of spaces
+                    i<-i+1                                                      // increment i
+                } |> Seq.toList) |> List.map num                                // making list of numbers from list of list of digits
             // lest of frequences
 
             // list of leafs
-            let leafs = List.zip chars freqs' |> List.map (fun (x,y)->Leaf(x,y))// из полученных последовательностей частот и символов соберем листья
-            let tree = buildTree leafs                                          // теперь из листьев восстановим дерево
+            let leafs = List.zip chars freqs' |> List.map (fun (x,y)->Leaf(x,y))// make leafs from lists of freqs and chars
+            let tree = buildTree leafs                                          // now build tree with our leafs
             let decode (bits: int list) =
                 let rec decodeInner bitsLeft treeNode result =
-                    match bitsLeft, treeNode with                             // смотрим оставшуюся последовательность из 0 и 1 и вершину дерева в которой сейчас находимся
-                    | [], Node(_,_,_) -> result |>List.rev |> List.toArray    // если вдруг произошла ошибка и мы не дошли до листа, то покажем то что получилось
-                    | [], Leaf(c,_) -> (c::result) |>List.rev |> List.toArray // мы дошли до конца в последовательности и находимся в листе. пишем символ и все ок.
-                    | _, Leaf(c,_) -> decodeInner bitsLeft tree (c::result)   // последовательность еще не закончилась и мы уже в листе, начинаем снова с корня
-                    | b::rest, Node(_,l,r) -> if (b=1)                        // биты еще не закончились и мы находимся в вершине дерева
-                                              then decodeInner rest l result  // если записана 1, то мы идем в левое поддерево и читаем биты дальше
-                                              else decodeInner rest r result  // а если 0, то в правое
-                new string (decodeInner bits tree [])                         // запишем результат в строку.
+                    match bitsLeft, treeNode with                             // 
+                    | [], Node(_,_,_) -> result |>List.rev |> List.toArray    // 
+                    | [], Leaf(c,_) -> (c::result) |>List.rev |> List.toArray // if sequence  is empty and we are in leaf it is ok!
+                    | _, Leaf(c,_) -> decodeInner bitsLeft tree (c::result)   // seqquence is not empty and we are in leaf -> begin again from root
+                    | b::rest, Node(_,l,r) -> if (b=1)                        // bits are not end and we are in node
+                                              then decodeInner rest l result  // if there is 1, we go to the left tree
+                                              else decodeInner rest r result  // if 0, to the right
+                new string (decodeInner bits tree [])                         // write result to string
 
             let delete = int(input.Item(0))-100                                //bits that should be deleted 
-            let bufBitSeq = [for x in (i) .. (input.Length-1) ->               //(100 - просто число которое мы прибавили при сжатии чтобы получился символ)
-                               (decToBin (int (input.Item(x))))] |> List.concat// переведем каждый символ прочтенной строки сначала в число а потов в список из 0 и 1
-            let bitSeq = copy bufBitSeq 0 (bufBitSeq.Length-delete)            // скопируем только нужную часть без лишних нулей в конце
+            let bufBitSeq = [for x in (i) .. (input.Length-1) ->               //(100 - is simple number that we are chose when write)
+                               (decToBin (int (input.Item(x))))] |> List.concat// translate every symbol to number and the to its binary view
+            let bitSeq = copy bufBitSeq 0 (bufBitSeq.Length-delete)            // copying without rest of 0s
             let str = new StreamWriter(outputPath + "/output.trn")
-            for c in (decode bitSeq) do str.Write(c)                           // выведем результат в файл
+            for c in (decode bitSeq) do str.Write(c)                           // write result to file
             str.Close()
             System.Console.WriteLine("done")
         | _ ->
