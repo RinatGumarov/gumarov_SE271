@@ -37,8 +37,9 @@
         add0 (List.rev (dtb b))
 
     //копирование count элементов списка list начиная с index
-    let copy (list: int list) index count = [for i in index .. (index + count - 1) -> list.Item(i)]
-     
+    let copy (list: int list) (index:int) count = list.GetSlice(Some(index),(Some(index+count-1)))
+
+
 
     //убрать повторяющиеся элементы списка, оставив только первое вхождение (повторяются только символы, частоты могуут быть разными)
     let rec otsev = function
@@ -181,6 +182,7 @@
             // list of leafs
             let leafs = List.zip chars freqs' |> List.map (fun (x,y)->Leaf(x,y))// из полученных последовательностей частот и символов соберем листья
             let tree = buildTree leafs                                          // теперь из листьев восстановим дерево
+            printfn"tree built"
             let decode (bits: int list) =
                 let rec decodeInner bitsLeft treeNode result =
                     match bitsLeft, treeNode with                             // смотрим оставшуюся последовательность из 0 и 1 и вершину дерева в которой сейчас находимся
@@ -193,9 +195,11 @@
                 new string (decodeInner bits tree [])                         // запишем результат в строку.
 
             let delete = int(input.Item(0))-100                                //bits that should be deleted 
-            let bufBitSeq = [for x in (i) .. (input.Length-1) ->               //(100 - просто число которое мы прибавили при сжатии чтобы получился символ)
+            let bufBitSeq = [for x in i .. (input.Length-1) ->                 //(100 - просто число которое мы прибавили при сжатии чтобы получился символ)
                                (decToBin (int (input.Item(x))))] |> List.concat// переведем каждый символ прочтенной строки сначала в число а потов в список из 0 и 1
+            printfn"bits list created"
             let bitSeq = copy bufBitSeq 0 (bufBitSeq.Length-delete)            // скопируем только нужную часть без лишних нулей в конце
+            printfn"bits list created2"
             let str = new StreamWriter(outputPath + "/output.trn")
             for c in (decode bitSeq) do str.Write(c)                           // выведем результат в файл
             str.Close()
