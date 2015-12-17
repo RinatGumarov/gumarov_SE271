@@ -36,7 +36,11 @@
             | _ -> add0 (0::a)
         add0 (List.rev (dtb b))
 
+<<<<<<< HEAD
     //copying count elements from list begin from index
+=======
+    //копирование count элементов списка list начиная с index
+>>>>>>> 7fb93a6ae1c9208b75529a4fea9c74a1c34f828e
     let copy (list: int list) index count = list.GetSlice(Some(index), Some(index+count-1))
  
     // length of dec number
