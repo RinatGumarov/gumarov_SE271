@@ -35,8 +35,9 @@
             | 8 -> a
             | _ -> add0 (0::a)
         add0 (List.rev (dtb b))
-
+      
     //copying count elements from list begin from index
+
     let copy (list: int list) index count = list.GetSlice(Some(index), Some(index+count-1))
  
     // length of dec number
@@ -121,16 +122,16 @@
                                        [for i in 0 .. (7-(listOfBits.Length%8)) -> 0]))] // add 0s to get list with 8 bits
             printfn"all done"
             let rest0 = char (binToDec(decToBin(8-(listOfBits.Length%8))) + 100)         // count of rest 0s
-            let str = new StreamWriter(outputPath + "output.txt")                                     // 
+            let str = new StreamWriter(outputPath)                                       // 
             str.Write(rest0)                                                             // write count of bits that we should delete
 
             for i in 0 .. (leafs.Length-1) do           
-                     str.Write(getCharFromLeaf (leafs.Item(i)))                          // write all chars
+                     str.Write(getCharFromLeaf (leafs.[i]))                          // write all chars
 
-            str.Write(getCharFromLeaf (leafs.Item(0)))                                   // write first symbol so we can stop reading on it
+            str.Write(getCharFromLeaf (leafs.[0]))                                   // write first symbol so we can stop reading on it
 
             for i in 0 .. (leafs.Length-1) do 
-                                    str.Write(freq (leafs.Item(i)))                      // write frequences
+                                    str.Write(freq (leafs.[i]))                          // write frequences
                                     str.Write(" ")                                       // with space
             for i in listOfChars do str.Write(i)                                         // and encoded input
             str.Close()
@@ -141,8 +142,8 @@
             let mutable i = 2                                                   // variable to iterate read
             //list of chars
             let chars =(input.Item(1))::(seq{
-                while not (input.Item(1).Equals(input.Item(i))) do              // read chars while it is not equal to first char
-                 yield input.Item(i)
+                while not (input.[1].Equals(input.[i])) do                      // read chars while it is not equal to first char
+                 yield input.[i]
                  i <- i+1
                 }|>Seq.toList)
             i <- i+1
@@ -156,8 +157,8 @@
             let freqs' = (seq{                                                  // count of numbers and chars are equal
                 while sp < (chars.Length) do                                    // while spaces count not equal to count of chars
                     yield (seq{
-                        while not (' '.Equals(input.Item(i))) do                // while current element is not equal to space
-                            yield input.Item(i)                                 // yield this element to list
+                        while not (' '.Equals(input.[i])) do                    // while current element is not equal to space
+                            yield input.[i]                                     // yield this element to list
                             i <- i + 1                                          // increment i
                     }|> Seq.toList)|>List.map parseOneDigitToInt                // parse every char of digit to digit
                     sp <- sp+1                                                  // incremeent count of spaces
@@ -166,7 +167,7 @@
             // lest of frequences
 
             // list of leafs
-            let leafs = List.zip chars freqs' |> List.map (fun (x,y)->Leaf(x,y))// make leafs from lists of freqs and chars
+            let leafs = List.zip chars freqs' |> List.map Leaf                  // make leafs from lists of freqs and chars
             let tree = buildTree leafs                                          // now build tree with our leafs
             let decode (bits: int list) =
                 let rec decodeInner bitsLeft treeNode result =
@@ -179,22 +180,21 @@
                                               else decodeInner rest r result  // if 0, to the right
                 new string (decodeInner bits tree [])                         // write result to string
 
-            let delete = int(input.Item(0))-100                                //bits that should be deleted 
+            let delete = int(input.[0])-100                                    //bits that should be deleted 
             let bufBitSeq = [for x in (i) .. (input.Length-1) ->               //(100 - is simple number that we are chose when write)
-                               (decToBin (int (input.Item(x))))] |> List.concat// translate every symbol to number and the to its binary view
+                               (decToBin (int (input.[x])))] |> List.concat    // translate every symbol to number and the to its binary view
             let bitSeq = copy bufBitSeq 0 (bufBitSeq.Length-delete)            // copying without rest of 0s
-            let str = new StreamWriter(outputPath + "/output.trn")
+            let str = new StreamWriter(outputPath)
             for c in (decode bitSeq) do str.Write(c)                           // write result to file
             str.Close()
             System.Console.WriteLine("done")
         | _ ->
             printfn"use:: compress or decompress? <c/d> or <-/+>"
-
     [<EntryPoint>]
     let main argv = 
         let argList = argv |> List.ofSeq
         match argList with
         |[fst;snd;thr]-> archive fst snd thr
         |[]->printfn"nothing. use:: compress or decompress? <c/d> or <-/+>"
-        |_-> printfn"oops. something goes wrong. use:: compress or decompress? <c/d> or <-/+>"
+        |_-> printfn"oops. something goes wrong. use:: compress or decompress? <c/d> or <-/+>"        
         0
